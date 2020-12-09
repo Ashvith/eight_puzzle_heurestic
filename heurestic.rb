@@ -1,0 +1,176 @@
+# frozen_string_literal: false
+
+#---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+# About this project:
+#---------------------------------------------------------------------------
+# This is a simple 8 puzzle solver in Ruby that uses heurestic function, to
+# solve to an optimal solution.
+# More details given inside the Mardown file.
+#---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+
+# THIS IS WHERE YOU HAVE TO ENTER THE COMBINATION OF YOUR PRESENT STATE.
+present_state = [   # This is the equivalent of:
+  [1, 2, 3],        # |1|2|3|
+  [0, 4, 6],        # | |4|6|
+  [7, 5, 8]         # |7|5|8|
+]
+
+# ONLY MODIFY IF NEEDED, OR ELSE, DO NOT TOUCH THIS
+solution_state = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 0]
+]
+
+num = 0
+
+x = true
+
+# To find the heurestic combination of a given state.
+def heurestic_count(present_state, solution_state)
+  heurestic = 0
+  (0...present_state.size).each do |i|
+    (0...present_state[i].size).each do |j|
+      heurestic += 1 unless present_state[i][j] == solution_state[i][j]
+    end
+  end
+  heurestic
+end
+
+def next_move(present_state, num)
+  move_plot = []
+  x_y = [0, 1] # x = 0, y = 1
+
+  x_y.each do |i|
+    -1.step(1, 2) do |j|
+      loc = getloc(present_state, num)
+      loc[i] += j
+      move_plot.push(loc) unless loc[i].negative? || loc[i] > (present_state.length - 1)
+    end
+  end
+  move_plot
+end
+
+def getloc(present_state, num)
+  (0...present_state.length).each do |i|
+    (0...present_state[i].length).each do |j|
+      return [i, j] if present_state[i][j] == num
+    end
+  end
+end
+
+def swap_place(instance_state, plot, original_pos)
+  temp = instance_state[original_pos[0]][original_pos[1]]
+  instance_state[original_pos[0]][original_pos[1]] = instance_state[plot[0]][plot[1]]
+  instance_state[plot[0]][plot[1]] = temp
+
+  instance_state
+end
+
+def setter(present_state)
+  original = []
+  temp = []
+  (0...present_state.length).each do |i|
+    (0...present_state[i].length).each do |j|
+      temp.push(present_state[i][j])
+    end
+    original.push(temp)
+    temp = []
+  end
+  original
+end
+
+def combination(present_state, num)
+  moves = next_move(present_state, num)
+  heurestic_store = []
+  original_pos = getloc(present_state, num)
+
+  (0...moves.length).each do |i|
+    original_state = setter(present_state)
+    generated_state = swap_place(original_state, moves[i], original_pos)
+    heurestic_store.push(generated_state)
+  end
+  heurestic_store
+end
+
+def count_maker(present_state, solution_state, num)
+  count = []
+  moves = next_move(present_state, num)
+  heurestic_store = combination(present_state, num)
+  (0...moves.length).each do |i|
+    count.push(heurestic_count(heurestic_store[i], solution_state))
+  end
+  count
+end
+
+def pretty_maker(present_state)
+  (0...present_state.length).each do |i|
+    p present_state[i]
+  end
+end
+
+#---------------------------------------------------------------------------
+#---TESTING-----------------------------------------------------------------
+# Method 1
+# p heurestic_count(present_state, solution_state)
+
+# Method 2
+# p next_move(present_state, num)
+
+# Method 3
+# p getloc(present_state, num)
+
+# Method 4
+# p swap_place(present_state, plot, original_pos)
+
+# Method 5
+# p setter(present_state)
+
+# Method 6
+# combination(present_state, num)
+
+# Method 7
+# count_maker(present_state, solution_state, num)
+
+# Method 8
+# pretty_maker(present_state)
+#---------------------------------------------------------------------------
+
+# A very simple console based UI that pre-generates all the steps required to
+# solve 8 puzzle problem. This is done by the while loop below
+
+while x
+  if present_state == solution_state
+    puts 'No need to solve as present and solution state are equal'
+    x = false
+    break
+  end
+
+  puts 'Given present state is:'
+  pretty_maker(present_state)
+  puts "\n---------------------------------------------------------------------------"
+
+  puts 'New possible combinations are:'
+  combinations_generated = combination(present_state, num)
+  count_generated = count_maker(present_state, solution_state, num)
+  (0...combinations_generated.length).each do |i|
+    pretty_maker(combinations_generated[i])
+    puts "Heurestic value is #{count_generated[i]}"
+    print "\n"
+  end
+  puts '---------------------------------------------------------------------------'
+  minimum = count_generated.min
+  index = count_generated.find_index(minimum)
+  got = combinations_generated[index]
+  puts "Choosing heurestic value with lowest count: #{minimum}"
+  pretty_maker(got)
+  puts "\n---------------------------------------------------------------------------"
+
+  if got == solution_state
+    x = false
+  else
+    present_state = got
+  end
+end
