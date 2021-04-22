@@ -1,4 +1,4 @@
-### Warning: do not try using this code!! It is broken, and has will not work!!
+### Warning: do not try using this code!! It is broken, and will not work!!
 ---
 # Simple 8 puzzle solver implementation in Ruby 💎
 
